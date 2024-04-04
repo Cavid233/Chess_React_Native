@@ -1,148 +1,31 @@
+/* eslint-disable react-native/no-inline-styles */
 import {
   View,
-  Text,
   Dimensions,
   StyleSheet,
   TouchableWithoutFeedback,
+  SafeAreaView,
 } from 'react-native';
 import React, {useState} from 'react';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-
+import {Rook, Knight, Bishop, King, Queen, Pawn} from './models/ChessFigure';
+import HeroPawnCard from './components/HeroPawnCard';
 const screenWidth = Dimensions.get('window').width;
-
-class Figures {
-  name: string;
-  x: number;
-  y: number;
-  color: string;
-
-  constructor(name: string, x: number, y: number, color: string) {
-    this.name = name;
-    this.x = x;
-    this.y = y;
-    this.color = color;
-  }
-}
-
-class Pawn extends Figures {
-  constructor(x: number, y: number, color: string) {
-    super('chess-pawn', x, y, color);
-  }
-
-  checkRules(destX: number, destY: number) {
-
-    if (this.color === 'white') {
-      console.log(this.y - destY === 1);
-      if (
-        this.y === destY &&
-        this.x === 6 &&
-        (this.x - destX === 1 || this.x - destX === 2)
-      ) {
-        return true;
-      } else if (this.x - destX === 1 && this.y === destY) {
-        return true;
-      }
-    } else if (this.color === 'black') {
-      if (
-        this.y === destY &&
-        this.x === 1 &&
-        (destX - this.x === 1 || destX - this.x === 2)
-      ) {
-        return true;
-      } else if (destX - this.x === 1 && this.y === destY) {
-        return true;
-      }
-    }
-  }
-}
-
-class Rook extends Figures {
-  constructor(x: number, y: number, color: string) {
-    super('chess-rook', x, y, color);
-  }
-
-  checkRules(destX: number, destY: number) {
-    if (destX === this.x || destY === this.y) {
-      return true;
-    }
-    return false;
-  }
-}
-
-class Knight extends Figures {
-  constructor(x: number, y: number, color: string) {
-    super('chess-knight', x, y, color);
-  }
-
-  checkRules(destX: number, destY: number) {
-    // Check if the move follows the L-shaped pattern of a knight.
-    const deltaX = Math.abs(destX - this.x);
-    const deltaY = Math.abs(destY - this.y);
-
-    return (deltaX === 1 && deltaY === 2) || (deltaX === 2 && deltaY === 1);
-  }
-}
-
-class Bishop extends Figures {
-  constructor(x: number, y: number, color: string) {
-    super('chess-bishop', x, y, color);
-  }
-
-  checkRules(destX: number, destY: number) {
-    const checkX = Math.abs(destX - this.x);
-    const checkY = Math.abs(destY - this.y);
-
-    return checkX === checkY;
-  }
-}
-
-class Queen extends Figures {
-  constructor(x: number, y: number, color: string) {
-    super('chess-queen', x, y, color);
-  }
-
-  checkRules(destX: number, destY: number) {
-    if (
-      Bishop.prototype.checkRules.bind(this)(destX, destY) ||
-      Rook.prototype.checkRules.bind(this)(destX, destY)
-    ) {
-      return true;
-    }
-    return false;
-  }
-}
-
-class King extends Figures {
-  constructor(x: number, y: number, color: string) {
-    super('chess-king', x, y, color);
-  }
-
-  checkRules(destX: number, destY: number) {
-    const deltaX = Math.abs(destX - this.x);
-    const deltaY = Math.abs(destY - this.y);
-
-    return (
-      (deltaX === 1 && deltaY === 0) ||
-      (deltaX === 0 && deltaY === 1) ||
-      (deltaX === 1 && deltaY === 1)
-    );
-  }
-}
 
 const initialChessboard = [
   // Rank 1 (the first row from White's perspective)
   [
     new Rook(0, 0, 'black'),
-    new Knight(0, 1, 'black'),
-    new Bishop(0, 2, 'black'),
-    new King(0, 3, 'black'),
-    new Queen(0, 4, 'black'),
-    new Bishop(0, 5, 'black'),
-    new Knight(0, 6, 'black'),
-    new Rook(0, 7, 'black'),
+    new Knight(1, 0, 'black'),
+    new Bishop(2, 0, 'black'),
+    new King(3, 0, 'black'),
+    new Queen(4, 0, 'black'),
+    new Bishop(5, 0, 'black'),
+    new Knight(6, 0, 'black'),
+    new Rook(7, 0, 'black'),
   ],
   // Rank 2 (pawns in the second row)
-  [...Array.from({length: 8}, (_, colIndex) => new Pawn(1, colIndex, 'black'))],
+  [...Array.from({length: 8}, (_, rowIndex) => new Pawn(rowIndex, 1, 'black'))],
   // Rank 3 (empty)
   [null, null, null, null, null, null, null, null],
   // Rank 4 (empty)
@@ -152,35 +35,61 @@ const initialChessboard = [
   // Rank 6 (empty)
   [null, null, null, null, null, null, null, null],
   // Rank 7 (pawns in the seventh row)
-  [...Array.from({length: 8}, (_, colIndex) => new Pawn(6, colIndex, 'white'))],
+  [...Array.from({length: 8}, (_, rowIndex) => new Pawn(rowIndex, 6, 'white'))],
 
   // Rank 8 (the eighth row from Black's perspective)
   [
-    new Rook(7, 0, 'white'),
-    new Knight(7, 1, 'white'),
-    new Bishop(7, 2, 'white'),
-    new King(7, 3, 'white'),
-    new Queen(7, 4, 'white'),
-    new Bishop(7, 5, 'white'),
-    new Knight(7, 6, 'white'),
+    new Rook(0, 7, 'white'),
+    new Knight(1, 7, 'white'),
+    new Bishop(2, 7, 'white'),
+    new King(3, 7, 'white'),
+    new Queen(4, 7, 'white'),
+    new Bishop(5, 7, 'white'),
+    new Knight(6, 7, 'white'),
     new Rook(7, 7, 'white'),
   ],
+];
+
+const listOfHeroPawn = [
+  'chess-rook',
+  'chess-queen',
+  'chess-bishop',
+  'chess-knight',
 ];
 
 let move = 0;
 let selectedFigure: any;
 
+if (__DEV__) {
+  import('./ReactotronConfig').then(() => console.log('Reactotron Configured'));
+}
+
+let successPawn: any;
+
 const App = () => {
   const [chessBoard, setChessBoard] = useState(initialChessboard);
-  const [moveOrder, setMoveOrder] = useState('white');
+  const [moveOrder, setMoveOrder] = useState<string>('white');
 
-  const figureMoveHandler = (rowIndex: number, colIndex: number) => {
+  const [highlightedFigureId, setHighlightedFigureId] = useState<number>(-1);
+
+  const [isHeroPawnListVisible, setIsHeroPawnListVisible] =
+    useState<Boolean>(false);
+
+  const figureMoveHandler = (
+    rowIndex: number,
+    colIndex: number,
+    figureId: number = -1,
+    figureColor: string = '',
+  ) => {
+    if (selectedFigure?.color === figureColor) {
+      move = 0;
+    }
+
     if (move === 0) {
-      console.log('0');
-      selectedFigure = initialChessboard[rowIndex][colIndex];
-      console.log('selectedFigure', selectedFigure);
+      selectedFigure = chessBoard[rowIndex][colIndex];
 
       if (selectedFigure && moveOrder === selectedFigure.color) {
+        setHighlightedFigureId(figureId);
         move++;
       }
     } else {
@@ -192,41 +101,111 @@ const App = () => {
         selectedDestination === null ||
         selectedDestination.color !== selectedFigure.color
       ) {
-        // if (selectedFigure.name === "chess-bishop" || selectedFigure.name === "chess-rook" || selectedFigure.name === "chess-queen") {
-        // console.log("hey")
-        const isValid = selectedFigure.checkRules(rowIndex, colIndex);
+        const isValid = selectedFigure.checkRules(
+          colIndex,
+          rowIndex,
+          selectedDestination,
+        );
+
         if (!isValid) {
           return;
         }
-        // }
 
         newChessBoard[rowIndex][colIndex] = selectedFigure;
-        newChessBoard[selectedFigure.x][selectedFigure.y] = null;
+        newChessBoard[selectedFigure.y][selectedFigure.x] = null;
         setChessBoard(() => newChessBoard);
-        selectedFigure.x = rowIndex;
-        selectedFigure.y = colIndex;
+        selectedFigure.x = colIndex;
+        selectedFigure.y = rowIndex;
         setMoveOrder(moveOrder === 'white' ? 'black' : 'white');
+
+        if (
+          (selectedFigure.color === 'white' &&
+            selectedFigure.name === 'chess-pawn' &&
+            selectedFigure.y === 0) ||
+          // write the same thing for black figure
+          (selectedFigure.color === 'black' &&
+            selectedFigure.name === 'chess-pawn' &&
+            selectedFigure.y === 7)
+        ) {
+          setIsHeroPawnListVisible(true);
+          successPawn = selectedFigure;
+        }
+
+        setHighlightedFigureId(-1);
       }
 
       move = 0;
     }
   };
 
-  return (
-    <View style={styles.container}>
+  const replacePawnHandler = (item: string) => {
+    const newChessBoard: any = [...chessBoard];
+    const xPosition = successPawn.x;
+    const yPosition = successPawn.y;
+    let selectedArea;
+    switch (item) {
+      case 'chess-rook':
+        selectedArea = new Rook(xPosition, yPosition, successPawn.color);
+        break;
+      case 'chess-queen':
+        selectedArea = new Queen(xPosition, yPosition, successPawn.color);
 
+        break;
+      case 'chess-bishop':
+        selectedArea = new Bishop(xPosition, yPosition, successPawn.color);
+        break;
+      case 'chess-knight':
+        selectedArea = new Knight(xPosition, yPosition, successPawn.color);
+        break;
+    }
+    newChessBoard[yPosition][xPosition] = selectedArea;
+    setChessBoard(() => newChessBoard);
+    setIsHeroPawnListVisible(false);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-evenly',
+          position: 'absolute',
+          zIndex: 99,
+          top: '15%',
+          width: '100%',
+        }}>
+        {isHeroPawnListVisible &&
+          listOfHeroPawn.map((item, index) => (
+            <HeroPawnCard
+              index={index}
+              item={item}
+              replacePawnHandler={replacePawnHandler}
+            />
+          ))}
+      </View>
       <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
         {chessBoard.map((row, rowIndex) => (
           <View key={rowIndex} style={{flexDirection: 'row'}}>
             {row.map((square, colIndex) => (
               <TouchableWithoutFeedback
-                onPress={() => figureMoveHandler(rowIndex, colIndex)}
-                key={colIndex.toString()}>
+                onPress={() =>
+                  figureMoveHandler(
+                    rowIndex,
+                    colIndex,
+                    square?.id,
+                    square?.color,
+                  )
+                }
+                key={Math.random().toString()}>
                 <View
                   style={{
                     ...styles.card,
                     backgroundColor:
-                      (rowIndex + colIndex) % 2 === 0 ? '#6c523b' : '#90826d',
+                      square && highlightedFigureId === square.id
+                        ? '#8ba832'
+                        : (rowIndex + colIndex) % 2 === 0
+                        ? '#6c523b'
+                        : '#90826d',
                   }}>
                   {square && (
                     <MaterialCommunityIcons
@@ -241,16 +220,16 @@ const App = () => {
           </View>
         ))}
       </View>
-
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     backgroundColor: 'black',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   card: {
     width: screenWidth / 8,
